@@ -1,4 +1,3 @@
-حتماً! در ادامه یک گزارش کامل، استاندارد، و حرفه‌ای برای فایل `test_crossvalidation_with_redpoint.py` ارائه می‌دهم که مناسب بارگذاری در GitHub به‌عنوان مستندات رسمی این اسکریپت است.
 
 ---
 
@@ -162,15 +161,4 @@ tqdm
 * Designed for **dense forests** where multiple trees occur in close proximity.
 * Custom logic avoids overlapping predictions by choosing highest-score + shortest-distance box.
 
----
 
-### 🚀 Suggested Improvements
-
-* Add IoU filtering for stricter box validation
-* Visualize per-class detection success
-* Include PR curves (per class) and mAP metric
-
----
-
-اگر خواستی نسخه فارسی هم آماده می‌کنم 🌱
-می‌خوای تو ریپازیتوری یه `README.md` کامل هم برات تولید کنم؟
