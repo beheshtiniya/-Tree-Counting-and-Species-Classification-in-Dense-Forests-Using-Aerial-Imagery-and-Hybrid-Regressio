@@ -20,43 +20,6 @@ This project evaluates a **Faster R-CNN** object detection model using a **dot-b
 
 ---
 
-### ⚙️ Pipeline Summary
- ┌────────────┐    ┌────────────────────────────┐     ┌────────────────────────┐
- │  Images    │───►│ Faster R-CNN Inference     │────►│ Raw Predicted Boxes    │
- └────────────┘    └────────────────────────────┘     └────────────────────────┘
-                                                           │
-                                                           ▼
-                                     ┌────────────────────────────────────┐
-                                     │ Load Ground Truth Dots (cx, cy)   │
-                                     │ from dots_csv/*.csv               │
-                                     └────────────────────────────────────┘
-                                                           │
-                                                           ▼
-                               ┌────────────────────────────────────────────┐
-                               │ Filter Predicted Boxes Using Red Dots      │
-                               │ ─ only keep boxes that include each (cx,cy)│
-                               │ ─ pick highest-score box per point         │
-                               └────────────────────────────────────────────┘
-                                                           │
-                                                           ▼
-                               ┌────────────────────────────────────────────┐
-                               │ Save Filtered Boxes as CSV (per image)     │
-                               │  → filtered_predicted_dots/*.csv           │
-                               └────────────────────────────────────────────┘
-                                                           │
-                                                           ▼
-                               ┌────────────────────────────────────────────┐
-                               │ Merge All Filtered Boxes                   │
-                               │  → merged_predictions.csv                  │
-                               └────────────────────────────────────────────┘
-                                                           │
-                                                           ▼
- ┌────────────────────┐                                     ▼
- │  test_labels.csv   │────────────┐       ┌────────────────────────────────────────────────────┐
- └────────────────────┘            └──────►│ Compare with test_labels.csv to Generate Metrics   │
-                                           │ → Confusion Matrix (5x5), Precision, Recall, F1    │
-                                           │ → Save classification_metrics.csv                  │
-                                           └────────────────────────────────────────────────────┘
 
 ---
 
