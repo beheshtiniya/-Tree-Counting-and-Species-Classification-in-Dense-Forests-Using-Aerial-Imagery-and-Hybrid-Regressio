@@ -1,6 +1,10 @@
-## 📊 Project Report: Evaluation of Tree Species Detection via Faster R-CNN
+حتماً! در ادامه یک گزارش کامل، استاندارد، و حرفه‌ای برای فایل `test_crossvalidation_with_redpoint.py` ارائه می‌دهم که مناسب بارگذاری در GitHub به‌عنوان مستندات رسمی این اسکریپت است.
 
-### 📁 Repository: -Tree-Counting-and-Species-Classification-in-Dense-Forests-Using-Aerial-Imagery-and-Hybrid-Regressio
+---
+
+## 📊 Project Report: Tree Species Detection & Classification using Faster R-CNN with Dot-based Filtering
+
+### 📁 Script: `test_crossvalidation_with_redpoint.py`
 
 **Last updated:** 2025-07-15
 
@@ -8,126 +12,165 @@
 
 ### 🔍 Overview
 
-This project evaluates a fine-tuned [Faster R-CNN](https://arxiv.org/abs/1506.01497) object detection model applied to **aerial forest imagery** for the dual task of:
+This repository evaluates a fine-tuned [Faster R-CNN](https://arxiv.org/abs/1506.01497) model on **aerial images of dense forests** to classify individual trees by species.
 
-* **Tree counting** (instance detection)
-* **Tree species classification** (multi-class prediction)
-
-The core script (referred to as **Code 2**) performs a full pipeline from loading test images, running the trained model, filtering predictions, comparing with ground truth (GT), and generating evaluation metrics.
+The evaluation pipeline leverages **center-point (dot) annotations** as ground truth and uses **point-in-box logic** for filtering predictions. Classification performance is assessed using standard metrics such as **precision**, **recall**, and **F1-score**, derived via a **confusion matrix**.
 
 ---
 
-### 🧠 Key Features
+### 🌲 Task Description
 
-| Module                | Description                                                                                         |
-| --------------------- | --------------------------------------------------------------------------------------------------- |
-| 🔄 Model Inference    | Uses pretrained Faster R-CNN with custom head (5 species classes)                                   |
-| 📍 GT Comparison      | Evaluates predictions by matching them with **annotated tree dots (cx, cy)** and **bounding boxes** |
-| 🎯 Evaluation Metrics | Computes precision, recall, F1-score, and a detailed confusion matrix                               |
-| 📁 Export             | Saves predicted bounding boxes per image and exports merged results to CSV                          |
-| 🖼️ Visualization     | Saves predicted images with bounding boxes color-coded per class                                    |
+The model performs:
+
+* 🎯 **Tree detection**: Locating individual trees in dense canopy
+* 🧬 **Species classification**: Assigning a species class (1–5) to each detected tree
+
+Ground truth consists of:
+
+* `test_labels.csv`: True bounding boxes and species labels
+* `dots_csv/*.csv`: Center-point annotations of trees (cx, cy)
 
 ---
 
-### 📂 Directory Structure
+### 🧠 Pipeline Summary
+
+| Step                          | Description                                                                |
+| ----------------------------- | -------------------------------------------------------------------------- |
+| 🖼️ Load test images          | Reads all test samples and their image filenames                           |
+| 🤖 Load model                 | Loads a pretrained Faster R-CNN model with custom head (5 species classes) |
+| 🔍 Predict bounding boxes     | Applies model to detect trees and predict class & confidence score         |
+| 📍 Filter with dot-points     | Keeps only boxes that **contain a GT point** and are **closest** to it     |
+| 📤 Export filtered boxes      | Saves final boxes to per-image CSVs and a merged global CSV                |
+| 📊 Compute metrics            | Calculates confusion matrix, precision, recall, and F1-score               |
+| 🎨 Visualize confusion matrix | Plots confusion matrix using `seaborn`                                     |
+
+---
+
+### 📁 Directory Structure
 
 ```bash
 dataset/
-├── images/                    # RGB images (.jpg/.tif)
-├── test_labels.csv           # GT bounding boxes + class
-├── dots_csv/                 # GT dot annotations (cx, cy)
-├── predicted_boxes/          # Model output boxes per image
-└── output_images/            # Visualization of predictions
+├── images/                    # Aerial RGB images
+├── test_labels.csv           # GT bounding boxes + labels
+├── dots_csv/*.csv            # GT dot (cx, cy) annotations per image
+├── checkpoints_cross/        # Saved model weights
+├── COMBINE_RESULT/
+│   ├── predicted_boxes/      # Raw model outputs
+│   ├── filtered_predicted_dots/  # Filtered results using point-in-box logic
+│   ├── merged_predictions.csv    # Combined predictions
+│   └── classification_metrics.csv  # Precision, recall, F1
 ```
 
 ---
 
-### ⚙️ How It Works
+### ⚙️ Step-by-Step Workflow
 
-1. **Dataset Loading**
+1. **Image & Dot Loader**
 
-   * Loads test images and annotations (bounding boxes and labels).
-   * For each image, GT dot file is read from `dots_csv`.
+   * Loads each test image
+   * Reads corresponding center-points from `.csv` in `dots_csv`
 
 2. **Model Inference**
 
-   * Loads the trained model from `.pth` file.
+   * Loads a `.pth` checkpoint from `checkpoints_cross`
    * For each image:
 
-     * Predicts boxes, scores, labels.
-     * Filters out low-confidence boxes.
+     * Detects bounding boxes, class labels, and confidence scores
 
-3. **Matching Predictions to GT**
+3. **Point-in-Box Filtering**
 
-   * For each GT dot `(cx, cy)`:
+   * For each `(cx, cy)` GT point:
 
-     * Finds the best predicted box that encloses the point.
-     * Assigns that box's label to the point (if valid).
-   * Filters and deduplicates predictions.
+     * Searches all predicted boxes that contain the point
+     * Selects the box with **highest score and closest center**
+   * Removes duplicate or overlapping predictions
 
-4. **IoU Matching and Label Correction**
+4. **Export & Merge**
 
-   * Calculates IoU between predicted and GT boxes.
-   * Matches class labels only when IoU exceeds a threshold (default `0.1`).
-   * Counts undetected trees and incorrect predictions.
+   * Saves filtered boxes to:
 
-5. **Visualization**
+     * Per-image CSV files (`filtered_predicted_dots`)
+     * Global merged CSV (`merged_predictions.csv`)
 
-   * Saves images with color-coded bounding boxes for each class:
+5. **Evaluation**
 
-     * Red: Class 1, Green: Class 2, Blue: Class 3, Yellow: Class 4.
+   * Compares predicted class vs. true class from `test_labels.csv`
+   * Computes:
 
-6. **CSV Merging**
-
-   * Combines per-image CSVs into a unified prediction file.
-
-7. **Metrics and Evaluation**
-
-   * Computes final confusion matrix and classification scores.
-   * Prints and saves metrics.
+     * 📏 Precision (macro)
+     * 🧲 Recall (macro)
+     * 🧮 F1-score (macro)
+   * Confusion matrix is computed and visualized
 
 ---
 
-### 📌 Evaluation Outputs
+### 📊 Example Output
 
-* `00_combined_predictions.csv`: Combined prediction results
-* `classification_metrics.csv`: Final evaluation metrics
-* `output_images/*.png`: Visual outputs for qualitative analysis
-* `Confusion Matrix`: Visualized with matplotlib/seaborn
-
----
-
-### 📊 Example Metrics Output
-
-```text
+```txt
 Precision: 0.90
 Recall:    0.88
 F1 Score:  0.89
 ```
 
----
-
-### 🔫 Dependencies
-
-* `torch`, `torchvision`
-* `pandas`, `numpy`
-* `matplotlib`, `seaborn`
-* `scikit-learn`
-* `tqdm`
+<p align="center">
+  <img src="assets/confusion_matrix_example.png" width="600"/>
+</p>
 
 ---
 
-### ⚠️ Notes & Considerations
+### ✅ Key Characteristics
 
-* GT includes both **bounding boxes** and **tree center points (dots)**.
-* Filtering is **dot-based**: predictions are accepted if they cover a GT dot.
-* Misaligned or low-IoU predictions are **penalized** in metrics.
-* Visualization helps with human validation of detections.
+* 📍 **Dot-based filtering**: Boxes are retained **only** if they cover a GT point
+* 🔁 **No use of IoU**: IoU is **not computed** in this script; matching is spatial (point-in-box)
+* 📚 **Dual GTs used**:
+
+  * Dots for localization
+  * Boxes for classification
+* 📈 **Confusion matrix** provides full insight into classification accuracy per species
 
 ---
 
-### 🔄 Future Improvements
+### 💾 Output Files
 
-* Add PR-curves per class.
-* Integrate IoU threshold sweep to optimize performance.
-* Apply post-processing to merge overlapping boxes (e.g. NMS tuning).
+| File                            | Description                                |
+| ------------------------------- | ------------------------------------------ |
+| `merged_predictions.csv`        | Final filtered predictions                 |
+| `classification_metrics.csv`    | Precision, recall, F1                      |
+| `filtered_predicted_dots/*.csv` | Per-image predictions after filtering      |
+| `confusion matrix image`        | Heatmap-style image of prediction accuracy |
+
+---
+
+### 🔧 Requirements
+
+```bash
+torch
+torchvision
+pandas
+numpy
+scikit-learn
+matplotlib
+seaborn
+tqdm
+```
+
+---
+
+### 📌 Notes
+
+* Assumes test set is **fixed**, and model checkpoint is trained externally.
+* Designed for **dense forests** where multiple trees occur in close proximity.
+* Custom logic avoids overlapping predictions by choosing highest-score + shortest-distance box.
+
+---
+
+### 🚀 Suggested Improvements
+
+* Add IoU filtering for stricter box validation
+* Visualize per-class detection success
+* Include PR curves (per class) and mAP metric
+
+---
+
+اگر خواستی نسخه فارسی هم آماده می‌کنم 🌱
+می‌خوای تو ریپازیتوری یه `README.md` کامل هم برات تولید کنم؟
