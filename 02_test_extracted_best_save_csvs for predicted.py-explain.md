@@ -26,7 +26,7 @@ This project applies a fine-tuned **Faster R-CNN (ResNet50-FPN)** model to detec
 * 📷 **Visual Output**: Saved images include color-coded predicted boxes.
 * 📉 **Confusion Matrix**: Final metrics are plotted for precision, recall, and class distribution.
 
-![Dot-Based Filtering Process](https://github.com/beheshtiniya/-Tree-Counting-and-Species-Classification-in-Dense-Forests-Using-Aerial-Imagery-and-Hybrid-Regressio/blob/main/algorithm.png)
+![Dot-Based Filtering Process](https://github.com/beheshtiniya/-Tree-Counting-and-Species-Classification-in-Dense-Forests-Using-Aerial-Imagery-and-Hybrid-Regressio/blob/main/algorithm2.png)
 ### 🗂 Folder Structure
 
 ```
