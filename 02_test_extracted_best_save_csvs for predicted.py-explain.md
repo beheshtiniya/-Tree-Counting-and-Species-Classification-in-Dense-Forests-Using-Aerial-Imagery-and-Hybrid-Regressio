@@ -1,137 +1,168 @@
-## 📊 Project Report: Tree Species Classification and Localization using Faster R-CNN with Dual Ground Truth
+---
 
-**📁 Repository:** `02_test_extracted_best_save_csvs for predicted.py`
-**🗓️ Last Updated:** 2025-07-15
+## 📦 02_test_extracted_best_save_csvs  
+
+### Detect, Extract & Evaluate Bounding Boxes for Tree Species
 
 ---
 
-### 🔍 Overview
+### 🚀 Overview
 
-This project implements and evaluates a **fine-tuned Faster R-CNN** model for tree detection and species classification in **dense aerial forest imagery**. It uniquely utilizes both:
+This project applies a fine-tuned **Faster R-CNN (ResNet50-FPN)** model to detect, extract, and classify trees in aerial or satellite images. It integrates both **dot-based filtering** (via ground truth cx, cy points) and **IoU-based evaluation**, generating:
 
-* **GT Dots (cx, cy):** Annotated center points of trees for localized matching.
-* **GT Boxes:** Ground truth bounding boxes for final metric evaluations.
-
----
-
-### 🎯 Key Capabilities
-
-| Feature                              | Description                                                                 |
-| ------------------------------------ | --------------------------------------------------------------------------- |
-| ✅ Model Inference                    | Uses pretrained `Faster R-CNN ResNet-50 FPN`, fine-tuned for 5 tree classes |
-| ✅ Dot-Based Filtering                | Matches predicted boxes with GT dots using spatial enclosure                |
-| ✅ GT Box Evaluation                  | Computes metrics using IoU against ground truth bounding boxes              |
-| ✅ IOU Matching (0.1 threshold)       | Extracts overlapping boxes and labels based on intersection ratio           |
-| ✅ Confusion Matrix                   | Plots full classification performance matrix                                |
-| ✅ Visualization                      | Saves color-coded bounding boxes for qualitative inspection                 |
-| ✅ Per-Image CSV & Merged Predictions | Saves both individual and unified prediction CSVs                           |
+* Per-image visualizations
+* Cleaned predicted bounding box CSVs
+* A unified prediction file
+* Confusion Matrix and statistics
 
 ---
 
-### 📁 Directory Structure
+### 🧠 Key Features
+
+* 🔍 **Dot-based matching**: For each labeled tree point `(cx, cy)`, the model picks the highest-scoring predicted box that contains it.
+* 🧽 **Duplicate removal**: Boxes are deduplicated using coordinate hashing.
+* 📊 **IoU evaluation**: Predicted boxes are validated against GT using a threshold of `IoU > 0.1`.
+* 📁 **CSV Export**: Each image's predictions are stored individually, plus a combined master CSV.
+* 📷 **Visual Output**: Saved images include color-coded predicted boxes.
+* 📉 **Confusion Matrix**: Final metrics are plotted for precision, recall, and class distribution.
+
+---
+
+### 🗂 Folder Structure
 
 ```
-root_dir/
-├── images/                          # RGB input images
-├── train_labels.csv                # GT boxes and labels for training
-├── test_labels.csv                 # GT boxes and labels for testing
-├── dots_csv/                       # GT dot annotations for test images
-├── predicted_boxes/               # Extracted CSVs per image
-├── output_images/                 # PNGs of visualized predictions
-└── 00_combined_predictions.csv    # Merged prediction results
+.
+├── dataset/
+│   ├── origin_data/
+│   │   ├── images/                   # Raw images
+│   │   ├── dots_csv/                # GT dot annotations (cx, cy)
+│   │   ├── test_labels.csv          # GT boxes & labels for test
+│   │   ├── new syntetic dataset/
+│   │   │   ├── predicted_boxes/     # Predicted box CSVs
+│   │   │   ├── output_images/       # Visualized predictions
+│   └── images_masked/
+│       └── checkpoints/
+│           └── best_model.pth       # Trained Faster R-CNN weights
+├── 02_test_extracted_best_save_csvs for predicted.py
 ```
 
 ---
 
-### 🛠️ How It Works
-
-1. **Dataset Loading**
-
-   * Loads both GT bounding boxes (`*_labels.csv`) and center dots (`dots_csv/`).
-   * Converts per-image labels into tensors for evaluation.
-
-2. **Model Inference**
-
-   * Loads `.pth` model with custom predictor head for 5 classes.
-   * Applies prediction on test set with adjustable score threshold (`0.2`).
-
-3. **Dot-Based Filtering**
-
-   * For each GT point `(cx, cy)`, searches for highest-scoring predicted box that contains it.
-   * Removes duplicate boxes and consolidates labels.
-
-4. **IoU-Based Validation**
-
-   * Calculates IoU between predicted and GT boxes (`IoU > 0.1`).
-   * Retains overlapping predictions and updates class labels accordingly.
-
-5. **Evaluation Metrics**
-
-   * Constructs `confusion_matrix()` using final predicted and GT labels.
-   * Computes per-class overlap statistics.
-   * Visualizes results using `ConfusionMatrixDisplay()`.
-
-6. **Output Files**
-
-   * Saves `.csv` files of predictions for each image.
-   * Merges results into `00_combined_predictions.csv`.
-   * Outputs `.png` image with bounding boxes color-coded by class:
-
-     * Red = Class 1, Green = Class 2, Blue = Class 3, Yellow = Class 4
-
----
-
-### 🧪 Example Output Metrics
-
-```
-Number of undetected trees (based on GT): 83
-Predicted instances: 920
-GT class distribution:
-  - Class 1: 533
-  - Class 2: 467
-  - Class 3: 134
-  - Class 4: 769
-IoU threshold: 0.1 | Score threshold: 0.2
-```
-
-📊 *Confusion matrix is plotted using `matplotlib` and includes all detected and missed classes.*
-
----
-
-### 🔍 Highlights
-
-* Robust hybrid filtering (dot-level + box-level)
-* High transparency in false negatives via GT comparison
-* Dataset-agnostic implementation with minor path changes
-
----
-
-### ⚠️ Considerations
-
-* Assumes all images have `.jpg` extension.
-* Predictions are filtered strictly by spatial containment first, then IoU.
-* Performance sensitive to score/IoU thresholds.
-
----
-
-### 🚀 Future Enhancements
-
-* Add per-class precision/recall reporting.
-* Dynamic threshold tuning for IoU and confidence.
-* Export confusion matrix to CSV/JSON.
-* Replace matplotlib with interactive `Plotly` version for dashboards.
-
----
-
-### ✅ Dependencies
+### 🛠 Dependencies
 
 ```bash
-pip install torch torchvision pandas numpy matplotlib scikit-learn
+torch
+torchvision
+pandas
+matplotlib
+scikit-learn
+Pillow
 ```
 
 ---
 
-### 👩‍💻 Maintainer
+### 🧪 How to Run
 
-Prepared by \[Your Name], July 2025
-Contact: [your.email@example.com](mailto:your.email@example.com)
+1. **Prepare the dataset**
+
+   * Place raw `.jpg` images inside: `dataset//images`
+   * Place dot annotations as `.csv`: `dataset//dots_csv`
+   * Place GT box labels: `test_labels.csv`
+
+2. **Run the evaluation**
+
+```bash
+python "02_test_extracted_best_save_csvs for predicted.py"
+```
+
+3. **Outputs generated:**
+
+   * `predicted_boxes/*.csv` per image
+   * `00_combined_predictions.csv` for all images
+   * Visualizations in `output_images/*.png`
+   * Confusion Matrix shown on screen
+
+---
+
+### 📊 Example Output
+
+* **Prediction CSV Row Format:**
+
+```csv
+filename,class,xmin,ymin,xmax,ymax
+img_001.jpg,2,103,140,215,255
+```
+
+* **Confusion Matrix:**
+
+The following stats are printed and visualized:
+
+```
+Number of trees in GT not detected: 48
+Number of predicted trees: 1523
+Number of 1 in GT: 533
+Number of 2 in GT: 467
+...
+```
+
+---
+
+### 🎯 Evaluation Strategy
+
+#### 1. Dot-Based Filtering
+
+* For each `(cx, cy)` point:
+
+  * Find the predicted box containing it
+  * Select the one with the highest score
+
+#### 2. Duplicate Box Removal
+
+* Convert boxes to tuple hash
+* Use dictionary to keep unique ones
+
+#### 3. IoU-Based Label Correction
+
+* Match predicted boxes to GT using IoU > 0.1
+* Use GT label if matched; otherwise default to `0`
+
+---
+
+### 🎨 Visualization Color Map
+
+| Class | Color     |
+| ----- | --------- |
+| 1     | 🔴 Red    |
+| 2     | 🟢 Green  |
+| 3     | 🔵 Blue   |
+| 4     | 🟡 Yellow |
+
+---
+
+### 📌 To-Do / Future Work
+
+* [ ] Add mAP & per-class metrics
+* [ ] Integrate validation dataset
+* [ ] Optimize thresholds dynamically
+* [ ] Add COCO-format export option
+
+---
+
+### 👨‍💻 Author
+
+Developed by **\[Your Name]** as part of tree-counting and classification research project.
+**Model:** `fasterrcnn_resnet50_fpn`
+**Framework:** PyTorch + torchvision
+
+---
+
+### 📜 License
+
+This project is under MIT License.
+
+---
+
+> For any inquiries or model retraining requests, feel free to open an issue or contact me directly.
+
+---
+
