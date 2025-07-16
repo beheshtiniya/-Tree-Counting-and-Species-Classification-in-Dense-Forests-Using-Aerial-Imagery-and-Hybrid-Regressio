@@ -10,6 +10,8 @@
 ### 🧠 Overview
 
 This project evaluates a **Faster R-CNN** object detection model using a **dot-based filtering mechanism** and **5-class classification** (including background). It’s tailored for aerial imagery tree detection tasks and incorporates red point annotations (`cx, cy`) to refine predictions before metric evaluation.
+
+
 ![Dot-Based Filtering Process](https://github.com/beheshtiniya/-Tree-Counting-and-Species-Classification-in-Dense-Forests-Using-Aerial-Imagery-and-Hybrid-Regressio/blob/main/test_crossvalidation2.png)
 
 
