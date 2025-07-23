@@ -76,8 +76,8 @@ This script performs a detailed 5-fold evaluation using red-dot ground-truth ann
 
   * Confusion matrices
   * Evaluation metrics
-  * Total number of predicted trees per fold (`total_samples.csv`)
-  * Number of rows in `merged_predictions.csv` per fold (`tree_count_report.csv`)
+  * Total number of predicted trees per fold (`all_total_samples.csv`)
+  * Number of rows in `merged_predictions.csv` per fold (`total_samples.csv`)
 * A multi-sheet Excel report: `final_report.xlsx`
 
 These results support deeper analysis and visualizations used in the article.
