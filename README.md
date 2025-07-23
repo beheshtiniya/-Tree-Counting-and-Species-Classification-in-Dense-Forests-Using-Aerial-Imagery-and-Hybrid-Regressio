@@ -60,12 +60,7 @@ This script will:
 
   ```
   checkpoints_cross-without dotmap/result{0..4}/COMBINE_RESULT/
-  ```
-If the number of predicted trees in the script   "
-test cross validation without dotmap.py"   
-is not correct after execution, please run the following script with the correct path:    "
-Aggregate the number of trees.py"
----
+ 
 
 ### 📈 4. Evaluate With Red-Point Ground Truth (Paper Experiments)
 
